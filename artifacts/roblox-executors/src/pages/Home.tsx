@@ -1,10 +1,8 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ShieldCheck, Activity, Clock, ServerCrash, AlertCircle, ShieldAlert, Zap } from "lucide-react";
-import { getExecutorData, getStats } from "@/data/executors";
+import { ShieldCheck, Activity, Clock, ServerCrash, AlertCircle, ShieldAlert, Zap, Loader2 } from "lucide-react";
+import { fetchExecutorData, getStats, type ExecutorCategory } from "@/data/executors";
 import { CategorySection } from "@/components/CategorySection";
-import { useMemo } from "react";
-
-
 
 function SectionDivider({ icon, label, color }: { icon: React.ReactNode; label: string; color: string }) {
   return (
@@ -16,12 +14,21 @@ function SectionDivider({ icon, label, color }: { icon: React.ReactNode; label: 
 }
 
 export default function Home() {
-  const data = useMemo(() => getExecutorData(), []);
+  const [data, setData] = useState<ExecutorCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const lastChecked = "March 16, 2026";
+
+  useEffect(() => {
+    fetchExecutorData().then(d => {
+      setData(d);
+      setLoading(false);
+    });
+  }, []);
+
   const trustedCategories = data.filter(c => c.sectionType === 'trusted');
   const untrustedCategories = data.filter(c => c.sectionType === 'untrusted');
   const externalCategories = data.filter(c => c.sectionType === 'external');
-  const stats = getStats();
-  const lastChecked = "March 16, 2026";
+  const stats = getStats(data);
 
   return (
     <div className="min-h-screen pb-20 relative overflow-hidden">
@@ -97,37 +104,41 @@ export default function Home() {
 
         {/* Content */}
         <main className="relative z-10">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-32 gap-4 text-muted-foreground">
+              <Loader2 className="w-10 h-10 animate-spin text-primary" />
+              <span className="text-sm tracking-widest uppercase font-semibold">Loading executor data...</span>
+            </div>
+          ) : (
+            <>
+              <SectionDivider
+                icon={<ShieldCheck className="w-6 h-6 text-primary" />}
+                label="Trusted Executors"
+                color="border-primary/30 bg-primary/5 text-primary"
+              />
+              {trustedCategories.map((category, index) => (
+                <CategorySection key={category.title} category={category} index={index} />
+              ))}
 
-          {/* Trusted */}
-          <SectionDivider
-            icon={<ShieldCheck className="w-6 h-6 text-primary" />}
-            label="Trusted Executors"
-            color="border-primary/30 bg-primary/5 text-primary"
-          />
-          {trustedCategories.map((category, index) => (
-            <CategorySection key={category.title} category={category} index={index} />
-          ))}
+              <SectionDivider
+                icon={<ShieldAlert className="w-6 h-6 text-orange-400" />}
+                label="Untrusted Executors"
+                color="border-orange-500/30 bg-orange-500/5 text-orange-400"
+              />
+              {untrustedCategories.map((category, index) => (
+                <CategorySection key={category.title} category={category} index={index} />
+              ))}
 
-          {/* Untrusted */}
-          <SectionDivider
-            icon={<ShieldAlert className="w-6 h-6 text-orange-400" />}
-            label="Untrusted Executors"
-            color="border-orange-500/30 bg-orange-500/5 text-orange-400"
-          />
-          {untrustedCategories.map((category, index) => (
-            <CategorySection key={category.title} category={category} index={index} />
-          ))}
-
-          {/* External Ratings */}
-          <SectionDivider
-            icon={<Zap className="w-6 h-6 text-cyan-400" />}
-            label="External Ratings"
-            color="border-cyan-500/30 bg-cyan-500/5 text-cyan-400"
-          />
-          {externalCategories.map((category, index) => (
-            <CategorySection key={category.title} category={category} index={index} />
-          ))}
-
+              <SectionDivider
+                icon={<Zap className="w-6 h-6 text-cyan-400" />}
+                label="External Ratings"
+                color="border-cyan-500/30 bg-cyan-500/5 text-cyan-400"
+              />
+              {externalCategories.map((category, index) => (
+                <CategorySection key={category.title} category={category} index={index} />
+              ))}
+            </>
+          )}
         </main>
 
         <footer className="mt-20 text-center text-muted-foreground border-t border-border/50 pt-8 pb-4">

@@ -6,9 +6,8 @@ import {
 } from "lucide-react";
 import {
   ADMIN_PASSWORD,
-  getExecutorData,
-  saveExecutorData,
-  resetExecutorData,
+  fetchExecutorData,
+  persistExecutorData,
   EXECUTOR_DATA,
   type ExecutorCategory,
   type Executor,
@@ -411,30 +410,53 @@ function CategoryRow({
 
 // ─── Main Admin Panel ─────────────────────────────────────────────────────────
 function AdminPanel() {
-  const [data, setData] = useState<ExecutorCategory[]>(() => getExecutorData());
+  const [data, setData] = useState<ExecutorCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [showReset, setShowReset] = useState(false);
 
   const [execModal, setExecModal] = useState<{ catIndex: number; execIndex: number | null } | null>(null);
   const [catModal, setCatModal] = useState<{ catIndex: number | null } | null>(null);
+
+  useEffect(() => {
+    fetchExecutorData().then(d => {
+      setData(d);
+      setLoading(false);
+    });
+  }, []);
 
   const logout = () => {
     sessionStorage.removeItem(SESSION_KEY);
     window.location.reload();
   };
 
-  const save = useCallback(() => {
-    saveExecutorData(data);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+  const save = useCallback(async () => {
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await persistExecutorData(data);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err: unknown) {
+      setSaveError(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setSaving(false);
+    }
   }, [data]);
 
-  const handleReset = () => {
-    resetExecutorData();
-    setData(deepClone(EXECUTOR_DATA));
-    setShowReset(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+  const handleReset = async () => {
+    try {
+      await persistExecutorData(deepClone(EXECUTOR_DATA));
+      setData(deepClone(EXECUTOR_DATA));
+      setShowReset(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err: unknown) {
+      setSaveError(err instanceof Error ? err.message : "Reset failed");
+      setShowReset(false);
+    }
   };
 
   const updateData = (newData: ExecutorCategory[]) => setData(newData);

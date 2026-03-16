@@ -1,26 +1,4 @@
-export type StatusType = 'updated' | 'outdated' | 'partial';
-export type SectionType = 'trusted' | 'untrusted' | 'external';
-
-export interface Executor {
-  name: string;
-  platform: string;
-  unc: string;
-  sunc: string;
-  detection: string;
-  status: string;
-  statusType: StatusType;
-  downloadUrl?: string;
-  discordUrl?: string;
-}
-
-export interface ExecutorCategory {
-  title: string;
-  sectionType: SectionType;
-  items: Executor[];
-}
-
-export const EXECUTOR_DATA: ExecutorCategory[] = [
-  // ============ TRUSTED ============
+export const EXECUTOR_DATA = [
   {
     title: "Trusted PC Free Executors (Keyless)",
     sectionType: "trusted",
@@ -124,8 +102,6 @@ export const EXECUTOR_DATA: ExecutorCategory[] = [
       { name: "Ronix", platform: "iOS", unc: "N/A", sunc: "N/A", detection: "Undetected", status: "Updated", statusType: "updated", discordUrl: "https://discord.com/invite/ronixstudios" },
     ]
   },
-
-  // ============ UNTRUSTED ============
   {
     title: "Untrusted PC Free Executors (Keyless)",
     sectionType: "untrusted",
@@ -154,8 +130,6 @@ export const EXECUTOR_DATA: ExecutorCategory[] = [
       { name: "Zenora", platform: "PC", unc: "99%", sunc: "90-96%", detection: "Undetected", status: "Delayed Release", statusType: "partial" },
     ]
   },
-
-  // ============ EXTERNAL RATINGS ============
   {
     title: "PC Free Externals (Keyless)",
     sectionType: "external",
@@ -182,46 +156,3 @@ export const EXECUTOR_DATA: ExecutorCategory[] = [
     ]
   },
 ];
-
-export const ADMIN_PASSWORD = "admin123";
-
-export const API_BASE = "/api";
-
-export const fetchExecutorData = async (): Promise<ExecutorCategory[]> => {
-  try {
-    const res = await fetch(`${API_BASE}/executors`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    return json.data as ExecutorCategory[];
-  } catch (err) {
-    console.warn("API unavailable, falling back to defaults:", err);
-    return EXECUTOR_DATA;
-  }
-};
-
-export const persistExecutorData = async (data: ExecutorCategory[]): Promise<void> => {
-  const res = await fetch(`${API_BASE}/executors`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ data }),
-  });
-  if (!res.ok) throw new Error(`Save failed: HTTP ${res.status}`);
-};
-
-export const getStats = (data: ExecutorCategory[]) => {
-  let updated = 0;
-  let outdated = 0;
-  let partial = 0;
-  let total = 0;
-
-  data.forEach(cat => {
-    cat.items.forEach(item => {
-      total++;
-      if (item.statusType === 'updated') updated++;
-      else if (item.statusType === 'partial') partial++;
-      else outdated++;
-    });
-  });
-
-  return { updated, outdated, partial, total };
-};
