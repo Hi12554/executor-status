@@ -2,15 +2,15 @@ import pg from "pg";
 
 const { Pool } = pg;
 
-const url = process.env.NEON_DATABASE_URL;
+const url = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
 
 if (!url) {
-  throw new Error("NEON_DATABASE_URL is not set.");
+  throw new Error("NEON_DATABASE_URL or DATABASE_URL is not set.");
 }
 
 export const pool = new Pool({
   connectionString: url,
-  ssl: { rejectUnauthorized: false },
+  ssl: url.includes("localhost") ? false : { rejectUnauthorized: false },
 });
 
 export async function initDb() {
