@@ -1,0 +1,13 @@
+packages:
+  "framer-motion": "For premium smooth entry animations and hover effects on cards"
+  "clsx": "Utility for conditionally joining classNames"
+  "tailwind-merge": "Utility to safely merge Tailwind classes"
+
+images:
+  - path: "artifacts/roblox-executors/public/images/hero-bg.png"
+    description: "Abstract dark gaming background, dark slate and black with very subtle deep purple and cyan geometric glowing grid lines, out of focus, high quality, 4k"
+    aspect_ratio: "16:9"
+
+notes:
+  - This is a purely static frontend displaying hardcoded data as requested.
+  - No backend integration is required.

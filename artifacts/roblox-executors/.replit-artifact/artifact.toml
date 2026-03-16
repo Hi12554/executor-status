@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Roblox Executor Status"
+version = "1.0.0"
+id = "artifacts/roblox-executors"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+localPort = 23616
+name = "web"
+paths = ["/"]
+
+[services.development]
+run = "pnpm --filter @workspace/roblox-executors run dev"
+
+[services.env]
+PORT = "23616"
+BASE_PATH = "/"
+
+[services.production]
+build = ["pnpm", "--filter", "@workspace/roblox-executors", "run", "build"]
+publicDir = "artifacts/roblox-executors/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
