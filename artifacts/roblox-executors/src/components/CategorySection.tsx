@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
-import { FolderGit2, Download, ExternalLink } from "lucide-react";
+import { FolderGit2, Download, ExternalLink, MessageCircle } from "lucide-react";
 import { StatusBadge } from "./StatusBadge";
-import type { ExecutorCategory } from "@/data/executors";
+import type { ExecutorCategory, SectionType } from "@/data/executors";
 import { cn } from "@/lib/utils";
 
 interface CategorySectionProps {
@@ -9,41 +9,71 @@ interface CategorySectionProps {
   index: number;
 }
 
+const sectionColors: Record<SectionType, {
+  icon: string;
+  border: string;
+  hover: string;
+  download: string;
+  discord: string;
+}> = {
+  trusted: {
+    icon: "bg-primary/10 text-primary",
+    border: "border-primary/20 hover:border-primary/50",
+    hover: "",
+    download: "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 hover:border-primary/50",
+    discord: "bg-indigo-500/10 text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/20",
+  },
+  untrusted: {
+    icon: "bg-orange-500/10 text-orange-400",
+    border: "border-orange-500/20 hover:border-orange-500/50",
+    hover: "",
+    download: "bg-orange-500/10 text-orange-400 border-orange-500/30 hover:bg-orange-500/20",
+    discord: "bg-indigo-500/10 text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/20",
+  },
+  external: {
+    icon: "bg-cyan-500/10 text-cyan-400",
+    border: "border-cyan-500/20 hover:border-cyan-500/50",
+    hover: "",
+    download: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/20",
+    discord: "bg-indigo-500/10 text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/20",
+  },
+};
+
 function UncCell({ value }: { value: string }) {
   const isDown = value === "Down" || value === "Not Updated";
-  const isFailed = value === "Failed Test";
+  const isFailed = value === "Failed Test" || value === "Failed to Test";
   const isNA = value === "N/A";
   const isPercent = value.includes("%");
 
   return (
-    <span
-      className={cn(
-        "font-mono text-sm font-semibold",
-        isDown ? "text-destructive" :
-        isFailed ? "text-yellow-400" :
-        isNA ? "text-muted-foreground" :
-        isPercent ? "text-success" :
-        "text-foreground"
-      )}
-    >
+    <span className={cn(
+      "font-mono text-sm font-semibold",
+      isDown ? "text-destructive" :
+      isFailed ? "text-yellow-400" :
+      isNA ? "text-muted-foreground" :
+      isPercent ? "text-success" :
+      "text-foreground"
+    )}>
       {value}
     </span>
   );
 }
 
 export function CategorySection({ category, index }: CategorySectionProps) {
+  const colors = sectionColors[category.sectionType];
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.08 }}
-      className="mb-10"
+      transition={{ duration: 0.5, delay: Math.min(index * 0.05, 0.5) }}
+      className="mb-8"
     >
-      <div className="flex items-center gap-3 mb-4 border-b border-border/50 pb-4">
-        <div className="p-2 bg-primary/10 rounded-lg text-primary glow-primary">
+      <div className="flex items-center gap-3 mb-4 border-b border-border/50 pb-3">
+        <div className={cn("p-2 rounded-lg", colors.icon)}>
           <FolderGit2 className="w-5 h-5" />
         </div>
-        <h2 className="text-xl md:text-2xl text-foreground font-bold tracking-wider">
+        <h2 className="text-lg md:text-xl text-foreground font-bold tracking-wider">
           {category.title}
         </h2>
         <div className="ml-auto bg-muted/50 px-3 py-1 rounded-full text-xs font-mono text-muted-foreground border border-border/50">
@@ -61,7 +91,7 @@ export function CategorySection({ category, index }: CategorySectionProps) {
               <th className="text-center px-4 py-3 font-semibold text-muted-foreground uppercase text-xs tracking-widest">sUNC</th>
               <th className="text-left px-4 py-3 font-semibold text-muted-foreground uppercase text-xs tracking-widest hidden lg:table-cell">Detection</th>
               <th className="text-center px-4 py-3 font-semibold text-muted-foreground uppercase text-xs tracking-widest">Status</th>
-              <th className="text-center px-4 py-3 font-semibold text-muted-foreground uppercase text-xs tracking-widest">Download</th>
+              <th className="text-center px-4 py-3 font-semibold text-muted-foreground uppercase text-xs tracking-widest">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -70,18 +100,16 @@ export function CategorySection({ category, index }: CategorySectionProps) {
                 key={`${executor.name}-${i}`}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.08 + i * 0.03 }}
+                transition={{ duration: 0.3, delay: Math.min(index * 0.05 + i * 0.02, 0.8) }}
                 className={cn(
                   "border-b border-border/30 last:border-0 transition-colors duration-200",
-                  executor.statusType === "updated"
-                    ? "hover:bg-success/5"
-                    : executor.statusType === "partial"
-                    ? "hover:bg-yellow-500/5"
-                    : "hover:bg-destructive/5"
+                  executor.statusType === "updated" ? "hover:bg-success/5" :
+                  executor.statusType === "partial" ? "hover:bg-yellow-500/5" :
+                  "hover:bg-destructive/5"
                 )}
               >
                 <td className="px-4 py-3">
-                  <span className="font-display font-bold text-foreground tracking-wide text-base">
+                  <span className="font-display font-bold text-foreground tracking-wide">
                     {executor.name}
                   </span>
                 </td>
@@ -96,35 +124,57 @@ export function CategorySection({ category, index }: CategorySectionProps) {
                 <td className="px-4 py-3 text-center">
                   <UncCell value={executor.sunc} />
                 </td>
-                <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">
+                <td className="px-4 py-3 text-muted-foreground text-sm hidden lg:table-cell">
                   {executor.detection}
                 </td>
                 <td className="px-4 py-3 text-center">
                   <StatusBadge status={executor.status} statusType={executor.statusType} />
                 </td>
                 <td className="px-4 py-3 text-center">
-                  {executor.downloadUrl ? (
-                    <a
-                      href={executor.downloadUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={cn(
-                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border",
-                        executor.statusType === "updated"
-                          ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 hover:border-primary/50"
-                          : "bg-muted/40 text-muted-foreground border-border/50 hover:bg-muted/60"
-                      )}
-                    >
-                      <Download className="w-3 h-3" />
-                      <span className="hidden sm:inline">Download</span>
-                      <ExternalLink className="w-3 h-3 opacity-60" />
-                    </a>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-muted/20 text-muted-foreground/40 border border-border/20 cursor-not-allowed select-none">
-                      <Download className="w-3 h-3" />
-                      <span className="hidden sm:inline">N/A</span>
-                    </span>
-                  )}
+                  <div className="flex items-center justify-center gap-1.5">
+                    {executor.downloadUrl ? (
+                      <a
+                        href={executor.downloadUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Download"
+                        className={cn(
+                          "inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border",
+                          colors.download
+                        )}
+                      >
+                        <Download className="w-3 h-3" />
+                        <span className="hidden md:inline">Download</span>
+                        <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                      </a>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-muted/20 text-muted-foreground/40 border border-border/20 cursor-not-allowed select-none" title="No download available">
+                        <Download className="w-3 h-3" />
+                        <span className="hidden md:inline">N/A</span>
+                      </span>
+                    )}
+                    {executor.discordUrl ? (
+                      <a
+                        href={executor.discordUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Discord Server"
+                        className={cn(
+                          "inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border",
+                          colors.discord
+                        )}
+                      >
+                        <MessageCircle className="w-3 h-3" />
+                        <span className="hidden md:inline">Discord</span>
+                        <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                      </a>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-muted/20 text-muted-foreground/40 border border-border/20 cursor-not-allowed select-none" title="No Discord available">
+                        <MessageCircle className="w-3 h-3" />
+                        <span className="hidden md:inline">N/A</span>
+                      </span>
+                    )}
+                  </div>
                 </td>
               </motion.tr>
             ))}
