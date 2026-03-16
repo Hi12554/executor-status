@@ -183,13 +183,31 @@ export const EXECUTOR_DATA: ExecutorCategory[] = [
   },
 ];
 
+export const ADMIN_PASSWORD = "admin123";
+
+export const getExecutorData = (): ExecutorCategory[] => {
+  try {
+    const stored = localStorage.getItem('roblox-executor-data');
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return EXECUTOR_DATA;
+};
+
+export const saveExecutorData = (data: ExecutorCategory[]): void => {
+  localStorage.setItem('roblox-executor-data', JSON.stringify(data));
+};
+
+export const resetExecutorData = (): void => {
+  localStorage.removeItem('roblox-executor-data');
+};
+
 export const getStats = () => {
   let updated = 0;
   let outdated = 0;
   let partial = 0;
   let total = 0;
 
-  EXECUTOR_DATA.forEach(cat => {
+  getExecutorData().forEach(cat => {
     cat.items.forEach(item => {
       total++;
       if (item.statusType === 'updated') updated++;

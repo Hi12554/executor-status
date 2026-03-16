@@ -1,11 +1,10 @@
 import { motion } from "framer-motion";
 import { ShieldCheck, Activity, Clock, ServerCrash, AlertCircle, ShieldAlert, Zap } from "lucide-react";
-import { EXECUTOR_DATA, getStats } from "@/data/executors";
+import { getExecutorData, getStats } from "@/data/executors";
 import { CategorySection } from "@/components/CategorySection";
+import { useMemo } from "react";
 
-const trustedCategories = EXECUTOR_DATA.filter(c => c.sectionType === 'trusted');
-const untrustedCategories = EXECUTOR_DATA.filter(c => c.sectionType === 'untrusted');
-const externalCategories = EXECUTOR_DATA.filter(c => c.sectionType === 'external');
+
 
 function SectionDivider({ icon, label, color }: { icon: React.ReactNode; label: string; color: string }) {
   return (
@@ -17,6 +16,10 @@ function SectionDivider({ icon, label, color }: { icon: React.ReactNode; label: 
 }
 
 export default function Home() {
+  const data = useMemo(() => getExecutorData(), []);
+  const trustedCategories = data.filter(c => c.sectionType === 'trusted');
+  const untrustedCategories = data.filter(c => c.sectionType === 'untrusted');
+  const externalCategories = data.filter(c => c.sectionType === 'external');
   const stats = getStats();
   const lastChecked = "March 16, 2026";
 
