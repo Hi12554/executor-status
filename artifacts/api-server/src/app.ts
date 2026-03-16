@@ -11,12 +11,10 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
 
-if (process.env.NODE_ENV === "production") {
-  const frontendDist = path.resolve(process.cwd(), "artifacts/roblox-executors/dist/public");
-  app.use(express.static(frontendDist));
-  app.get("*", (_req, res) => {
-    res.sendFile(path.join(frontendDist, "index.html"));
-  });
-}
+const frontendDist = path.resolve(process.cwd(), "artifacts/roblox-executors/dist/public");
+app.use(express.static(frontendDist));
+app.get("/*path", (_req, res) => {
+  res.sendFile(path.join(frontendDist, "index.html"));
+});
 
 export default app;
