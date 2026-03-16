@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ShieldCheck, Activity, Clock, ServerCrash } from "lucide-react";
+import { ShieldCheck, Activity, Clock, ServerCrash, AlertCircle } from "lucide-react";
 import { EXECUTOR_DATA, getStats } from "@/data/executors";
 import { CategorySection } from "@/components/CategorySection";
 
@@ -45,7 +45,7 @@ export default function Home() {
           </p>
 
           {/* Stats Row */}
-          <div className="flex flex-wrap justify-center gap-4 md:gap-8">
+          <div className="flex flex-wrap justify-center gap-4 md:gap-6">
             <div className="flex items-center gap-3 bg-card/40 backdrop-blur-md border border-success/20 px-6 py-3 rounded-2xl shadow-lg shadow-success/5">
               <div className="bg-success/20 p-2 rounded-lg text-success">
                 <ShieldCheck className="w-6 h-6" />
@@ -53,6 +53,16 @@ export default function Home() {
               <div className="text-left">
                 <div className="text-2xl font-bold text-foreground">{stats.updated}</div>
                 <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Updated</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 bg-card/40 backdrop-blur-md border border-yellow-500/20 px-6 py-3 rounded-2xl shadow-lg shadow-yellow-500/5">
+              <div className="bg-yellow-500/20 p-2 rounded-lg text-yellow-400">
+                <AlertCircle className="w-6 h-6" />
+              </div>
+              <div className="text-left">
+                <div className="text-2xl font-bold text-foreground">{stats.partial}</div>
+                <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Partial</div>
               </div>
             </div>
 

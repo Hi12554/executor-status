@@ -1,8 +1,13 @@
-export type ExecutorStatus = 'updated' | 'outdated';
+export type StatusType = 'updated' | 'outdated' | 'partial';
 
 export interface Executor {
   name: string;
-  status: ExecutorStatus;
+  platform: string;
+  unc: string;
+  sunc: string;
+  detection: string;
+  status: string;
+  statusType: StatusType;
 }
 
 export interface ExecutorCategory {
@@ -14,64 +19,64 @@ export const EXECUTOR_DATA: ExecutorCategory[] = [
   {
     title: "Trusted PC Free Executors (Keyless)",
     items: [
-      { name: "Xeno", status: "updated" },
-      { name: "Velocity", status: "updated" },
-      { name: "Solara", status: "updated" },
-      { name: "JJSploit", status: "updated" },
+      { name: "Xeno", platform: "PC", unc: "82%", sunc: "0%", detection: "Undetected (ban waves possible)", status: "Updated", statusType: "updated" },
+      { name: "Velocity", platform: "PC", unc: "99%", sunc: "94%", detection: "Undetected (ban waves possible)", status: "Updated", statusType: "updated" },
+      { name: "Solara", platform: "PC", unc: "67%", sunc: "39%", detection: "Undetected (ban waves possible)", status: "Updated", statusType: "updated" },
+      { name: "JJSploit", platform: "PC", unc: "82%", sunc: "0%", detection: "Undetected", status: "Updated", statusType: "updated" },
     ]
   },
   {
     title: "Trusted PC Free Executors (Key Required)",
     items: [
-      { name: "Bunni.Fun", status: "outdated" },
-      { name: "Valex Internal", status: "outdated" },
-      { name: "Swift", status: "outdated" },
-      { name: "Ronix", status: "outdated" },
-      { name: "Fluxus", status: "updated" },
+      { name: "Bunni.Fun", platform: "PC", unc: "Down", sunc: "Down", detection: "N/A", status: "Not Updated", statusType: "outdated" },
+      { name: "Valex Internal", platform: "PC", unc: "Down", sunc: "Down", detection: "N/A", status: "Not Updated", statusType: "outdated" },
+      { name: "Swift", platform: "PC", unc: "Down", sunc: "Down", detection: "N/A", status: "Not Updated", statusType: "outdated" },
+      { name: "Ronix", platform: "PC", unc: "Down", sunc: "Down", detection: "N/A", status: "Not Updated", statusType: "outdated" },
+      { name: "Fluxus", platform: "PC", unc: "86%", sunc: "52%", detection: "Undetected", status: "Updated (Compatibility issues)", statusType: "partial" },
     ]
   },
   {
     title: "Trusted PC Paid Executors",
     items: [
-      { name: "Potassium", status: "outdated" },
-      { name: "Seliware", status: "outdated" },
-      { name: "Sirhurt", status: "outdated" },
-      { name: "Volcano", status: "outdated" },
-      { name: "Water", status: "updated" },
-      { name: "Volt", status: "outdated" },
-      { name: "Cryptic", status: "outdated" },
-      { name: "Isaac", status: "updated" },
+      { name: "Potassium", platform: "PC", unc: "Down", sunc: "Down", detection: "N/A", status: "Not Updated", statusType: "outdated" },
+      { name: "Seliware", platform: "PC", unc: "Down", sunc: "Down", detection: "N/A", status: "Not Updated", statusType: "outdated" },
+      { name: "Sirhurt", platform: "PC", unc: "99%", sunc: "94%", detection: "Undetected (ban waves possible)", status: "Not Updated", statusType: "outdated" },
+      { name: "Volcano", platform: "PC", unc: "Not Updated", sunc: "Not Updated", detection: "N/A", status: "Not Updated", statusType: "outdated" },
+      { name: "Water", platform: "PC", unc: "99%", sunc: "100%", detection: "Undetected", status: "Updated", statusType: "updated" },
+      { name: "Volt", platform: "PC", unc: "99%", sunc: "98%", detection: "Undetected", status: "Not Updated", statusType: "outdated" },
+      { name: "Cryptic", platform: "PC", unc: "99%", sunc: "100%", detection: "Undetected (ban waves possible)", status: "Not Updated", statusType: "outdated" },
+      { name: "Isaac", platform: "PC", unc: "98%", sunc: "98%", detection: "Undetected", status: "Updated", statusType: "updated" },
     ]
   },
   {
     title: "Trusted Mac Executors",
     items: [
-      { name: "Oplumware", status: "updated" },
-      { name: "Hydrogen", status: "outdated" },
-      { name: "Ronix", status: "updated" },
-      { name: "MacSploit", status: "updated" },
+      { name: "Oplumware", platform: "Mac", unc: "99%", sunc: "100%", detection: "Undetected", status: "Updated", statusType: "updated" },
+      { name: "Hydrogen", platform: "Mac", unc: "Down", sunc: "Down", detection: "N/A", status: "Not Updated", statusType: "outdated" },
+      { name: "Ronix", platform: "Mac", unc: "N/A", sunc: "N/A", detection: "Undetected", status: "Updated", statusType: "updated" },
+      { name: "MacSploit", platform: "Mac", unc: "99%", sunc: "100%", detection: "Undetected", status: "Updated", statusType: "updated" },
     ]
   },
   {
     title: "Trusted Android Executors",
     items: [
-      { name: "Frostware", status: "outdated" },
-      { name: "JJSploit", status: "outdated" },
-      { name: "Fluxus", status: "outdated" },
-      { name: "Delta", status: "updated" },
-      { name: "Codex", status: "updated" },
-      { name: "Ronix", status: "updated" },
-      { name: "Arceus X Neo", status: "updated" },
-      { name: "Cryptic", status: "updated" },
-      { name: "VegaX", status: "updated" },
+      { name: "Frostware", platform: "Android", unc: "Down", sunc: "Down", detection: "N/A", status: "Not Updated", statusType: "outdated" },
+      { name: "JJSploit", platform: "Android", unc: "99%", sunc: "100%", detection: "Undetected", status: "Down / Not Updated", statusType: "outdated" },
+      { name: "Fluxus", platform: "Android", unc: "Down", sunc: "Down", detection: "N/A", status: "Not Updated", statusType: "outdated" },
+      { name: "Delta", platform: "Android", unc: "99%", sunc: "100%", detection: "Undetected", status: "Updated", statusType: "updated" },
+      { name: "Codex", platform: "Android", unc: "98%", sunc: "96%", detection: "Undetected", status: "Updated", statusType: "updated" },
+      { name: "Ronix", platform: "Android", unc: "N/A", sunc: "N/A", detection: "Undetected", status: "Updated", statusType: "updated" },
+      { name: "Arceus X Neo", platform: "Android", unc: "Failed Test", sunc: "98%", detection: "Undetected", status: "Updated", statusType: "updated" },
+      { name: "Cryptic", platform: "Android", unc: "98%", sunc: "97%", detection: "Undetected", status: "Updated", statusType: "updated" },
+      { name: "VegaX", platform: "Android", unc: "98%", sunc: "Failed Test", detection: "Undetected", status: "Updated", statusType: "updated" },
     ]
   },
   {
     title: "Trusted iOS Executors",
     items: [
-      { name: "Delta", status: "updated" },
-      { name: "Codex", status: "outdated" },
-      { name: "Arceus X Neo", status: "outdated" },
+      { name: "Delta", platform: "iOS", unc: "99%", sunc: "100%", detection: "Undetected", status: "Updated", statusType: "updated" },
+      { name: "Codex", platform: "iOS", unc: "Down", sunc: "Down", detection: "N/A", status: "Not Updated", statusType: "outdated" },
+      { name: "Arceus X Neo", platform: "iOS", unc: "Down", sunc: "Down", detection: "N/A", status: "Not Updated", statusType: "outdated" },
     ]
   }
 ];
@@ -79,15 +84,17 @@ export const EXECUTOR_DATA: ExecutorCategory[] = [
 export const getStats = () => {
   let updated = 0;
   let outdated = 0;
+  let partial = 0;
   let total = 0;
 
   EXECUTOR_DATA.forEach(cat => {
     cat.items.forEach(item => {
       total++;
-      if (item.status === 'updated') updated++;
+      if (item.statusType === 'updated') updated++;
+      else if (item.statusType === 'partial') partial++;
       else outdated++;
     });
   });
 
-  return { updated, outdated, total };
+  return { updated, outdated, partial, total };
 };
