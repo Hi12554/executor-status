@@ -23,6 +23,7 @@ export const EXECUTOR_DATA: ExecutorCategory[] = [
       { name: "Velocity", platform: "PC", unc: "99%", sunc: "94%", detection: "Undetected (ban waves possible)", status: "Updated", statusType: "updated" },
       { name: "Solara", platform: "PC", unc: "67%", sunc: "39%", detection: "Undetected (ban waves possible)", status: "Updated", statusType: "updated" },
       { name: "JJSploit", platform: "PC", unc: "82%", sunc: "0%", detection: "Undetected", status: "Updated", statusType: "updated" },
+      { name: "Zenon", platform: "PC", unc: "99%", sunc: "98%", detection: "Undetected", status: "Updated", statusType: "updated" },
     ]
   },
   {
