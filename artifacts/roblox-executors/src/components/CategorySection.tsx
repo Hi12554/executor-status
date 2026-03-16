@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { FolderGit2 } from "lucide-react";
+import { FolderGit2, Download, ExternalLink } from "lucide-react";
 import { StatusBadge } from "./StatusBadge";
 import type { ExecutorCategory } from "@/data/executors";
 import { cn } from "@/lib/utils";
@@ -61,6 +61,7 @@ export function CategorySection({ category, index }: CategorySectionProps) {
               <th className="text-center px-4 py-3 font-semibold text-muted-foreground uppercase text-xs tracking-widest">sUNC</th>
               <th className="text-left px-4 py-3 font-semibold text-muted-foreground uppercase text-xs tracking-widest hidden lg:table-cell">Detection</th>
               <th className="text-center px-4 py-3 font-semibold text-muted-foreground uppercase text-xs tracking-widest">Status</th>
+              <th className="text-center px-4 py-3 font-semibold text-muted-foreground uppercase text-xs tracking-widest">Download</th>
             </tr>
           </thead>
           <tbody>
@@ -100,6 +101,30 @@ export function CategorySection({ category, index }: CategorySectionProps) {
                 </td>
                 <td className="px-4 py-3 text-center">
                   <StatusBadge status={executor.status} statusType={executor.statusType} />
+                </td>
+                <td className="px-4 py-3 text-center">
+                  {executor.downloadUrl ? (
+                    <a
+                      href={executor.downloadUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(
+                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border",
+                        executor.statusType === "updated"
+                          ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 hover:border-primary/50"
+                          : "bg-muted/40 text-muted-foreground border-border/50 hover:bg-muted/60"
+                      )}
+                    >
+                      <Download className="w-3 h-3" />
+                      <span className="hidden sm:inline">Download</span>
+                      <ExternalLink className="w-3 h-3 opacity-60" />
+                    </a>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-muted/20 text-muted-foreground/40 border border-border/20 cursor-not-allowed select-none">
+                      <Download className="w-3 h-3" />
+                      <span className="hidden sm:inline">N/A</span>
+                    </span>
+                  )}
                 </td>
               </motion.tr>
             ))}
