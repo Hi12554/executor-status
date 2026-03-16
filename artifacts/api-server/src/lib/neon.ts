@@ -2,15 +2,25 @@ import pg from "pg";
 
 const { Pool } = pg;
 
-const url = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
+const rawUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
 
-if (!url) {
+if (!rawUrl) {
   throw new Error("NEON_DATABASE_URL or DATABASE_URL is not set.");
 }
 
+// Strip parameters that node-postgres doesn't support (channel_binding, sslmode)
+// SSL is configured explicitly via the ssl option below instead
+const url = rawUrl
+  .replace(/[?&]channel_binding=[^&]*/g, "")
+  .replace(/[?&]sslmode=[^&]*/g, "")
+  .replace(/\?&/, "?")
+  .replace(/[?&]$/, "");
+
+const isLocal = url.includes("localhost") || url.includes("127.0.0.1");
+
 export const pool = new Pool({
   connectionString: url,
-  ssl: url.includes("localhost") ? false : { rejectUnauthorized: false },
+  ssl: isLocal ? false : { rejectUnauthorized: false },
 });
 
 export async function initDb() {
