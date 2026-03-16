@@ -43,7 +43,7 @@ export function ExecutorCard({ executor, index }: ExecutorCardProps) {
         </h3>
       </div>
       
-      <StatusBadge status={executor.status} />
+      <StatusBadge status={executor.status} statusType={executor.statusType} />
     </motion.div>
   );
 }
