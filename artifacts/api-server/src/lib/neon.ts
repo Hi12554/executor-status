@@ -16,7 +16,12 @@ const url = rawUrl
   .replace(/\?&/, "?")
   .replace(/[?&]$/, "");
 
-const isLocal = url.includes("localhost") || url.includes("127.0.0.1");
+const isLocal =
+  url.includes("localhost") ||
+  url.includes("127.0.0.1") ||
+  url.includes("helium") ||
+  url.includes("sslmode=disable") ||
+  !url.includes(".");
 
 export const pool = new Pool({
   connectionString: url,
