@@ -10,6 +10,7 @@ import {
   persistExecutorData,
   fetchLastChecked,
   persistLastChecked,
+  formatLastChecked,
   EXECUTOR_DATA,
   type ExecutorCategory,
   type Executor,
@@ -540,9 +541,9 @@ function AdminPanel() {
     : null;
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-20 pt-14">
       {/* Top bar */}
-      <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border/50 px-6 py-4 flex items-center gap-4">
+      <div className="sticky top-14 z-40 bg-background/90 backdrop-blur-md border-b border-border/50 px-6 py-4 flex items-center gap-4">
         <div className="flex items-center gap-3">
           <div className="bg-primary/10 p-2 rounded-lg">
             <ShieldCheck className="w-5 h-5 text-primary" />
@@ -589,15 +590,14 @@ function AdminPanel() {
             <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">Last Checked Date</h2>
           </div>
           <p className="text-xs text-muted-foreground mb-4">
-            This text appears on the home page as "Last checked: <strong>{lastChecked || "Not set"}</strong>"
+            This text appears on the home page as "Last checked: <strong>{formatLastChecked(lastChecked) || "Not set"}</strong>"
           </p>
           <div className="flex items-center gap-3">
             <input
-              type="text"
+              type="date"
               value={lastCheckedInput}
               onChange={e => setLastCheckedInput(e.target.value)}
-              placeholder="e.g. March 19, 2026"
-              className="flex-1 bg-background border border-border rounded-xl px-4 py-2.5 text-foreground text-sm outline-none focus:border-primary transition-colors"
+              className="flex-1 bg-background border border-border rounded-xl px-4 py-2.5 text-foreground text-sm outline-none focus:border-primary transition-colors [color-scheme:dark]"
             />
             <button
               onClick={saveLastChecked}

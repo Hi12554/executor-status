@@ -183,7 +183,18 @@ export const EXECUTOR_DATA: ExecutorCategory[] = [
   },
 ];
 
-export const ADMIN_PASSWORD = "admin123";
+export const ADMIN_PASSWORD = "dairyqueen12";
+
+export function formatLastChecked(value: string): string {
+  if (!value) return "";
+  // If it's an ISO date (YYYY-MM-DD), format it nicely
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  }
+  return value;
+}
 
 export const API_BASE = "/api";
 

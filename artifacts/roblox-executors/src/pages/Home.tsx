@@ -1,8 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { ShieldCheck, Activity, Clock, ServerCrash, AlertCircle, ShieldAlert, Zap, Loader2 } from "lucide-react";
-import { fetchExecutorData, fetchLastChecked, getStats, type ExecutorCategory } from "@/data/executors";
+import {
+  ShieldCheck, Activity, Clock, ServerCrash, AlertCircle,
+  ShieldAlert, Zap, Loader2, Search, Filter
+} from "lucide-react";
+import {
+  fetchExecutorData, fetchLastChecked, formatLastChecked, getStats,
+  type ExecutorCategory, type SectionType
+} from "@/data/executors";
 import { CategorySection } from "@/components/CategorySection";
+import { cn } from "@/lib/utils";
 
 function SectionDivider({ icon, label, color }: { icon: React.ReactNode; label: string; color: string }) {
   return (
@@ -13,10 +20,21 @@ function SectionDivider({ icon, label, color }: { icon: React.ReactNode; label: 
   );
 }
 
+type SectionFilter = "all" | SectionType;
+
+const SECTION_FILTERS: { value: SectionFilter; label: string; color: string; activeColor: string }[] = [
+  { value: "all",       label: "All",       color: "border-border/50 text-muted-foreground", activeColor: "bg-muted/60 border-border text-foreground" },
+  { value: "trusted",   label: "Trusted",   color: "border-primary/30 text-primary/70",      activeColor: "bg-primary/10 border-primary/50 text-primary" },
+  { value: "untrusted", label: "Untrusted", color: "border-orange-500/30 text-orange-400/70",activeColor: "bg-orange-500/10 border-orange-500/50 text-orange-400" },
+  { value: "external",  label: "External",  color: "border-cyan-500/30 text-cyan-400/70",    activeColor: "bg-cyan-500/10 border-cyan-500/50 text-cyan-400" },
+];
+
 export default function Home() {
   const [data, setData] = useState<ExecutorCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastChecked, setLastChecked] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sectionFilter, setSectionFilter] = useState<SectionFilter>("all");
 
   useEffect(() => {
     Promise.all([fetchExecutorData(), fetchLastChecked()]).then(([d, lc]) => {
@@ -26,10 +44,25 @@ export default function Home() {
     });
   }, []);
 
-  const trustedCategories = data.filter(c => c.sectionType === 'trusted');
-  const untrustedCategories = data.filter(c => c.sectionType === 'untrusted');
-  const externalCategories = data.filter(c => c.sectionType === 'external');
   const stats = getStats(data);
+
+  const filteredData = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return data
+      .filter(c => sectionFilter === "all" || c.sectionType === sectionFilter)
+      .map(c => ({
+        ...c,
+        items: q ? c.items.filter(e => e.name.toLowerCase().includes(q)) : c.items,
+      }))
+      .filter(c => c.items.length > 0);
+  }, [data, searchQuery, sectionFilter]);
+
+  const trustedCategories = filteredData.filter(c => c.sectionType === "trusted");
+  const untrustedCategories = filteredData.filter(c => c.sectionType === "untrusted");
+  const externalCategories = filteredData.filter(c => c.sectionType === "external");
+
+  const totalFiltered = filteredData.reduce((a, c) => a + c.items.length, 0);
+  const isFiltering = searchQuery.trim() !== "" || sectionFilter !== "all";
 
   return (
     <div className="min-h-screen pb-20 relative overflow-hidden">
@@ -42,14 +75,14 @@ export default function Home() {
         />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
 
         {/* Header */}
         <motion.header
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="text-center mb-16 relative"
+          className="text-center mb-12 relative"
         >
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/20 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
@@ -97,11 +130,68 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-8 inline-flex items-center gap-2 text-sm text-muted-foreground bg-muted/30 px-4 py-2 rounded-full border border-border/50">
-            <Clock className="w-4 h-4" />
-            <span>Last checked: <strong className="text-foreground">{lastChecked || "Not set"}</strong></span>
-          </div>
+          {lastChecked && (
+            <div className="mt-8 inline-flex items-center gap-2 text-sm text-muted-foreground bg-muted/30 px-4 py-2 rounded-full border border-border/50">
+              <Clock className="w-4 h-4" />
+              <span>Last checked: <strong className="text-foreground">{formatLastChecked(lastChecked)}</strong></span>
+            </div>
+          )}
         </motion.header>
+
+        {/* Search & Filter Bar */}
+        {!loading && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="mb-8 space-y-3"
+          >
+            {/* Search input */}
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search executors by name..."
+                className="w-full bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl pl-10 pr-4 py-3 text-foreground placeholder:text-muted-foreground text-sm outline-none focus:border-primary/50 focus:bg-card/60 transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors text-xs font-semibold"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Section filters */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-widest mr-1">
+                <Filter className="w-3.5 h-3.5" />
+                Filter:
+              </div>
+              {SECTION_FILTERS.map(f => (
+                <button
+                  key={f.value}
+                  onClick={() => setSectionFilter(f.value)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200",
+                    sectionFilter === f.value ? f.activeColor : f.color + " hover:opacity-90"
+                  )}
+                >
+                  {f.label}
+                </button>
+              ))}
+              {isFiltering && (
+                <span className="ml-auto text-xs text-muted-foreground font-mono">
+                  {totalFiltered} result{totalFiltered !== 1 ? "s" : ""}
+                </span>
+              )}
+            </div>
+          </motion.div>
+        )}
 
         {/* Content */}
         <main className="relative z-10">
@@ -110,34 +200,52 @@ export default function Home() {
               <Loader2 className="w-10 h-10 animate-spin text-primary" />
               <span className="text-sm tracking-widest uppercase font-semibold">Loading executor data...</span>
             </div>
+          ) : filteredData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-32 gap-3 text-muted-foreground">
+              <Search className="w-10 h-10 opacity-30" />
+              <p className="font-semibold">No executors found</p>
+              <p className="text-sm">Try a different search term or filter</p>
+            </div>
           ) : (
             <>
-              <SectionDivider
-                icon={<ShieldCheck className="w-6 h-6 text-primary" />}
-                label="Trusted Executors"
-                color="border-primary/30 bg-primary/5 text-primary"
-              />
-              {trustedCategories.map((category, index) => (
-                <CategorySection key={category.title} category={category} index={index} />
-              ))}
+              {trustedCategories.length > 0 && (
+                <>
+                  <SectionDivider
+                    icon={<ShieldCheck className="w-6 h-6 text-primary" />}
+                    label="Trusted Executors"
+                    color="border-primary/30 bg-primary/5 text-primary"
+                  />
+                  {trustedCategories.map((category, index) => (
+                    <CategorySection key={category.title} category={category} index={index} />
+                  ))}
+                </>
+              )}
 
-              <SectionDivider
-                icon={<ShieldAlert className="w-6 h-6 text-orange-400" />}
-                label="Untrusted Executors"
-                color="border-orange-500/30 bg-orange-500/5 text-orange-400"
-              />
-              {untrustedCategories.map((category, index) => (
-                <CategorySection key={category.title} category={category} index={index} />
-              ))}
+              {untrustedCategories.length > 0 && (
+                <>
+                  <SectionDivider
+                    icon={<ShieldAlert className="w-6 h-6 text-orange-400" />}
+                    label="Untrusted Executors"
+                    color="border-orange-500/30 bg-orange-500/5 text-orange-400"
+                  />
+                  {untrustedCategories.map((category, index) => (
+                    <CategorySection key={category.title} category={category} index={index} />
+                  ))}
+                </>
+              )}
 
-              <SectionDivider
-                icon={<Zap className="w-6 h-6 text-cyan-400" />}
-                label="External Ratings"
-                color="border-cyan-500/30 bg-cyan-500/5 text-cyan-400"
-              />
-              {externalCategories.map((category, index) => (
-                <CategorySection key={category.title} category={category} index={index} />
-              ))}
+              {externalCategories.length > 0 && (
+                <>
+                  <SectionDivider
+                    icon={<Zap className="w-6 h-6 text-cyan-400" />}
+                    label="External Ratings"
+                    color="border-cyan-500/30 bg-cyan-500/5 text-cyan-400"
+                  />
+                  {externalCategories.map((category, index) => (
+                    <CategorySection key={category.title} category={category} index={index} />
+                  ))}
+                </>
+              )}
             </>
           )}
         </main>
