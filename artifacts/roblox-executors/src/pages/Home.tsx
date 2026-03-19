@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ShieldCheck, Activity, Clock, ServerCrash, AlertCircle, ShieldAlert, Zap, Loader2 } from "lucide-react";
-import { fetchExecutorData, getStats, type ExecutorCategory } from "@/data/executors";
+import { fetchExecutorData, fetchLastChecked, getStats, type ExecutorCategory } from "@/data/executors";
 import { CategorySection } from "@/components/CategorySection";
 
 function SectionDivider({ icon, label, color }: { icon: React.ReactNode; label: string; color: string }) {
@@ -16,11 +16,12 @@ function SectionDivider({ icon, label, color }: { icon: React.ReactNode; label: 
 export default function Home() {
   const [data, setData] = useState<ExecutorCategory[]>([]);
   const [loading, setLoading] = useState(true);
-  const lastChecked = "March 16, 2026";
+  const [lastChecked, setLastChecked] = useState("");
 
   useEffect(() => {
-    fetchExecutorData().then(d => {
+    Promise.all([fetchExecutorData(), fetchLastChecked()]).then(([d, lc]) => {
       setData(d);
+      setLastChecked(lc);
       setLoading(false);
     });
   }, []);
@@ -98,7 +99,7 @@ export default function Home() {
 
           <div className="mt-8 inline-flex items-center gap-2 text-sm text-muted-foreground bg-muted/30 px-4 py-2 rounded-full border border-border/50">
             <Clock className="w-4 h-4" />
-            <span>Last checked: <strong className="text-foreground">{lastChecked}</strong></span>
+            <span>Last checked: <strong className="text-foreground">{lastChecked || "Not set"}</strong></span>
           </div>
         </motion.header>
 

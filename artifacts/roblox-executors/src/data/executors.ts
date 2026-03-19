@@ -208,6 +208,26 @@ export const persistExecutorData = async (data: ExecutorCategory[]): Promise<voi
   if (!res.ok) throw new Error(`Save failed: HTTP ${res.status}`);
 };
 
+export const fetchLastChecked = async (): Promise<string> => {
+  try {
+    const res = await fetch(`${API_BASE}/meta`);
+    if (!res.ok) return "";
+    const json = await res.json();
+    return json.lastChecked ?? "";
+  } catch {
+    return "";
+  }
+};
+
+export const persistLastChecked = async (lastChecked: string): Promise<void> => {
+  const res = await fetch(`${API_BASE}/meta`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lastChecked }),
+  });
+  if (!res.ok) throw new Error(`Save failed: HTTP ${res.status}`);
+};
+
 export const getStats = (data: ExecutorCategory[]) => {
   let updated = 0;
   let outdated = 0;

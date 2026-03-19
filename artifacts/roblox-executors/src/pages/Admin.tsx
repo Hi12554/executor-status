@@ -2,12 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShieldCheck, LogOut, Plus, Trash2, Pencil, Save, RotateCcw,
-  ChevronDown, ChevronUp, X, Check, Lock, Eye, EyeOff
+  ChevronDown, ChevronUp, X, Check, Lock, Eye, EyeOff, Clock
 } from "lucide-react";
 import {
   ADMIN_PASSWORD,
   fetchExecutorData,
   persistExecutorData,
+  fetchLastChecked,
+  persistLastChecked,
   EXECUTOR_DATA,
   type ExecutorCategory,
   type Executor,
@@ -417,12 +419,20 @@ function AdminPanel() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [showReset, setShowReset] = useState(false);
 
+  const [lastChecked, setLastChecked] = useState("");
+  const [lastCheckedInput, setLastCheckedInput] = useState("");
+  const [savingMeta, setSavingMeta] = useState(false);
+  const [savedMeta, setSavedMeta] = useState(false);
+  const [metaError, setMetaError] = useState<string | null>(null);
+
   const [execModal, setExecModal] = useState<{ catIndex: number; execIndex: number | null } | null>(null);
   const [catModal, setCatModal] = useState<{ catIndex: number | null } | null>(null);
 
   useEffect(() => {
-    fetchExecutorData().then(d => {
+    Promise.all([fetchExecutorData(), fetchLastChecked()]).then(([d, lc]) => {
       setData(d);
+      setLastChecked(lc);
+      setLastCheckedInput(lc);
       setLoading(false);
     });
   }, []);
@@ -458,6 +468,21 @@ function AdminPanel() {
       setShowReset(false);
     }
   };
+
+  const saveLastChecked = useCallback(async () => {
+    setSavingMeta(true);
+    setMetaError(null);
+    try {
+      await persistLastChecked(lastCheckedInput);
+      setLastChecked(lastCheckedInput);
+      setSavedMeta(true);
+      setTimeout(() => setSavedMeta(false), 2500);
+    } catch (err: unknown) {
+      setMetaError(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setSavingMeta(false);
+    }
+  }, [lastCheckedInput]);
 
   const updateData = (newData: ExecutorCategory[]) => setData(newData);
 
@@ -556,6 +581,44 @@ function AdminPanel() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8">
+
+        {/* Last Checked Editor */}
+        <div className="mb-8 bg-card/40 border border-border/50 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Clock className="w-4 h-4 text-muted-foreground" />
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">Last Checked Date</h2>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">
+            This text appears on the home page as "Last checked: <strong>{lastChecked || "Not set"}</strong>"
+          </p>
+          <div className="flex items-center gap-3">
+            <input
+              type="text"
+              value={lastCheckedInput}
+              onChange={e => setLastCheckedInput(e.target.value)}
+              placeholder="e.g. March 19, 2026"
+              className="flex-1 bg-background border border-border rounded-xl px-4 py-2.5 text-foreground text-sm outline-none focus:border-primary transition-colors"
+            />
+            <button
+              onClick={saveLastChecked}
+              disabled={savingMeta}
+              className={cn(
+                "flex items-center gap-1.5 px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 whitespace-nowrap",
+                savedMeta
+                  ? "bg-success/20 text-success border border-success/40"
+                  : "bg-primary hover:bg-primary/80 text-primary-foreground"
+              )}
+            >
+              {savedMeta ? <><Check className="w-4 h-4" /> Saved!</> : <><Save className="w-4 h-4" /> Save Date</>}
+            </button>
+          </div>
+          {metaError && (
+            <p className="text-destructive text-xs mt-2 flex items-center gap-1">
+              <X className="w-3.5 h-3.5" /> {metaError}
+            </p>
+          )}
+        </div>
+
         <div className="flex items-center justify-between mb-6">
           <p className="text-muted-foreground text-sm">
             <span className="font-semibold text-foreground">{data.length}</span> categories &middot; <span className="font-semibold text-foreground">{data.reduce((a, c) => a + c.items.length, 0)}</span> executors total

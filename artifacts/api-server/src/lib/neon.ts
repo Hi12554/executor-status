@@ -20,13 +20,37 @@ const isLocal =
   url.includes("localhost") ||
   url.includes("127.0.0.1") ||
   url.includes("helium") ||
-  url.includes("sslmode=disable") ||
+  rawUrl.includes("sslmode=disable") ||
   !url.includes(".");
 
 export const pool = new Pool({
   connectionString: url,
   ssl: isLocal ? false : { rejectUnauthorized: false },
 });
+
+interface StoredPayload {
+  categories: object[];
+  lastChecked: string;
+}
+
+async function readRow(): Promise<StoredPayload> {
+  const { rows } = await pool.query("SELECT data FROM executor_data WHERE id = 1");
+  const raw = rows[0]?.data;
+  if (!raw) return { categories: [], lastChecked: "" };
+  // backward compat: if stored as a plain array, wrap it
+  if (Array.isArray(raw)) return { categories: raw, lastChecked: "" };
+  return {
+    categories: (raw as StoredPayload).categories ?? [],
+    lastChecked: (raw as StoredPayload).lastChecked ?? "",
+  };
+}
+
+async function writeRow(payload: StoredPayload): Promise<void> {
+  await pool.query(
+    "INSERT INTO executor_data (id, data, updated_at) VALUES (1, $1, NOW()) ON CONFLICT (id) DO UPDATE SET data = $1, updated_at = NOW()",
+    [JSON.stringify(payload)]
+  );
+}
 
 export async function initDb() {
   await pool.query(`
@@ -40,22 +64,25 @@ export async function initDb() {
   const { rows } = await pool.query("SELECT id FROM executor_data WHERE id = 1");
   if (rows.length === 0) {
     const { EXECUTOR_DATA } = await import("../data/defaultData.js");
-    await pool.query(
-      "INSERT INTO executor_data (id, data) VALUES (1, $1)",
-      [JSON.stringify(EXECUTOR_DATA)]
-    );
+    await writeRow({ categories: EXECUTOR_DATA, lastChecked: "" });
     console.log("Database seeded with default executor data.");
   }
 }
 
 export async function getExecutorData(): Promise<object[]> {
-  const { rows } = await pool.query("SELECT data FROM executor_data WHERE id = 1");
-  return rows[0]?.data ?? [];
+  return (await readRow()).categories;
 }
 
 export async function setExecutorData(data: object[]): Promise<void> {
-  await pool.query(
-    "INSERT INTO executor_data (id, data, updated_at) VALUES (1, $1, NOW()) ON CONFLICT (id) DO UPDATE SET data = $1, updated_at = NOW()",
-    [JSON.stringify(data)]
-  );
+  const current = await readRow();
+  await writeRow({ ...current, categories: data });
+}
+
+export async function getLastChecked(): Promise<string> {
+  return (await readRow()).lastChecked;
+}
+
+export async function setLastChecked(date: string): Promise<void> {
+  const current = await readRow();
+  await writeRow({ ...current, lastChecked: date });
 }
