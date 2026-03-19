@@ -541,9 +541,9 @@ function AdminPanel() {
     : null;
 
   return (
-    <div className="min-h-screen bg-background pb-20 pt-14">
+    <div className="min-h-screen bg-background pb-20">
       {/* Top bar */}
-      <div className="sticky top-14 z-40 bg-background/90 backdrop-blur-md border-b border-border/50 px-6 py-4 flex items-center gap-4">
+      <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border/50 px-6 py-4 flex items-center gap-4">
         <div className="flex items-center gap-3">
           <div className="bg-primary/10 p-2 rounded-lg">
             <ShieldCheck className="w-5 h-5 text-primary" />
