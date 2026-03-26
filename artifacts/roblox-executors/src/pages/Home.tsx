@@ -2,10 +2,11 @@ import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   ShieldCheck, Activity, Clock, ServerCrash, AlertCircle,
-  ShieldAlert, Zap, Loader2, Search, Filter
+  ShieldAlert, Zap, Loader2, Search, Filter, Wrench, ExternalLink
 } from "lucide-react";
 import {
   fetchExecutorData, fetchLastChecked, formatLastChecked, getStats,
+  fetchIsUpdating, DISCORD_URL,
   type ExecutorCategory, type SectionType
 } from "@/data/executors";
 import { CategorySection } from "@/components/CategorySection";
@@ -33,13 +34,15 @@ export default function Home() {
   const [data, setData] = useState<ExecutorCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastChecked, setLastChecked] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sectionFilter, setSectionFilter] = useState<SectionFilter>("all");
 
   useEffect(() => {
-    Promise.all([fetchExecutorData(), fetchLastChecked()]).then(([d, lc]) => {
+    Promise.all([fetchExecutorData(), fetchLastChecked(), fetchIsUpdating()]).then(([d, lc, upd]) => {
       setData(d);
       setLastChecked(lc);
+      setIsUpdating(upd);
       setLoading(false);
     });
   }, []);
@@ -63,6 +66,68 @@ export default function Home() {
 
   const totalFiltered = filteredData.reduce((a, c) => a + c.items.length, 0);
   const isFiltering = searchQuery.trim() !== "" || sectionFilter !== "all";
+
+  if (!loading && isUpdating) {
+    return (
+      <div className="min-h-screen pb-20 relative overflow-hidden flex flex-col items-center justify-center">
+        <div className="absolute top-0 left-0 w-full h-full -z-20">
+          <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-background/80 to-background z-10" />
+          <img
+            src={`${import.meta.env.BASE_URL}images/hero-bg.png`}
+            alt="Abstract Gaming Background"
+            className="w-full h-full object-cover opacity-20 mix-blend-screen"
+          />
+        </div>
+
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px] -z-10 pointer-events-none" />
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="max-w-2xl w-full mx-auto px-6 text-center"
+        >
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border border-primary/30 mb-8 mx-auto">
+            <Wrench className="w-9 h-9 text-primary animate-pulse" />
+          </div>
+
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-card/50 border border-primary/30 text-primary mb-6 backdrop-blur-md">
+            <Activity className="w-4 h-4 animate-pulse" />
+            <span className="text-sm font-semibold tracking-widest uppercase">Status Update In Progress</span>
+          </div>
+
+          <h1 className="text-4xl md:text-6xl font-extrabold mb-6 text-gradient drop-shadow-lg">
+            Updating Executor Statuses
+          </h1>
+
+          <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed">
+            We're currently reviewing and updating the latest executor statuses to make sure everything is accurate.
+            Check back soon — this won't take long.
+          </p>
+
+          <div className="bg-card/40 backdrop-blur-md border border-border/50 rounded-2xl p-6 mb-8">
+            <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+              Want to be the first to know when the statuses are updated?{" "}
+              <strong className="text-foreground">Join the Discord</strong> and you'll get notified as soon as everything's live.
+            </p>
+            <a
+              href={DISCORD_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#5865F2] hover:bg-[#4752c4] text-white rounded-xl font-bold transition-colors duration-200 text-sm"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Join the Discord
+            </a>
+          </div>
+
+          <p className="text-muted-foreground/60 text-xs">
+            Not interested? No worries — just check back later and we'll have everything ready for you.
+          </p>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pb-20 relative overflow-hidden">

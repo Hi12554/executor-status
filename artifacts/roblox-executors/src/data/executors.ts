@@ -239,6 +239,28 @@ export const persistLastChecked = async (lastChecked: string): Promise<void> => 
   if (!res.ok) throw new Error(`Save failed: HTTP ${res.status}`);
 };
 
+export const fetchIsUpdating = async (): Promise<boolean> => {
+  try {
+    const res = await fetch(`${API_BASE}/updating`);
+    if (!res.ok) return false;
+    const json = await res.json();
+    return json.isUpdating ?? false;
+  } catch {
+    return false;
+  }
+};
+
+export const persistIsUpdating = async (isUpdating: boolean): Promise<void> => {
+  const res = await fetch(`${API_BASE}/updating`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ isUpdating }),
+  });
+  if (!res.ok) throw new Error(`Save failed: HTTP ${res.status}`);
+};
+
+export const DISCORD_URL = "https://discord.gg/your-discord";
+
 export const getStats = (data: ExecutorCategory[]) => {
   let updated = 0;
   let outdated = 0;

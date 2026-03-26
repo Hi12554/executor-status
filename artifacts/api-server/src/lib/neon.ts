@@ -31,17 +31,19 @@ export const pool = new Pool({
 interface StoredPayload {
   categories: object[];
   lastChecked: string;
+  isUpdating: boolean;
 }
 
 async function readRow(): Promise<StoredPayload> {
   const { rows } = await pool.query("SELECT data FROM executor_data WHERE id = 1");
   const raw = rows[0]?.data;
-  if (!raw) return { categories: [], lastChecked: "" };
+  if (!raw) return { categories: [], lastChecked: "", isUpdating: false };
   // backward compat: if stored as a plain array, wrap it
-  if (Array.isArray(raw)) return { categories: raw, lastChecked: "" };
+  if (Array.isArray(raw)) return { categories: raw, lastChecked: "", isUpdating: false };
   return {
     categories: (raw as StoredPayload).categories ?? [],
     lastChecked: (raw as StoredPayload).lastChecked ?? "",
+    isUpdating: (raw as StoredPayload).isUpdating ?? false,
   };
 }
 
@@ -85,4 +87,13 @@ export async function getLastChecked(): Promise<string> {
 export async function setLastChecked(date: string): Promise<void> {
   const current = await readRow();
   await writeRow({ ...current, lastChecked: date });
+}
+
+export async function getIsUpdating(): Promise<boolean> {
+  return (await readRow()).isUpdating;
+}
+
+export async function setIsUpdating(isUpdating: boolean): Promise<void> {
+  const current = await readRow();
+  await writeRow({ ...current, isUpdating });
 }

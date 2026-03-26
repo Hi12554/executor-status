@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getExecutorData, setExecutorData, getLastChecked, setLastChecked } from "../lib/neon.js";
+import { getExecutorData, setExecutorData, getLastChecked, setLastChecked, getIsUpdating, setIsUpdating } from "../lib/neon.js";
 
 const router = Router();
 
@@ -50,6 +50,31 @@ router.put("/meta", async (req, res): Promise<void> => {
   } catch (err) {
     console.error("PUT /meta error:", err);
     res.status(500).json({ error: "Failed to save meta" });
+  }
+});
+
+router.get("/updating", async (_req, res) => {
+  try {
+    const isUpdating = await getIsUpdating();
+    res.json({ isUpdating });
+  } catch (err) {
+    console.error("GET /updating error:", err);
+    res.status(500).json({ error: "Failed to fetch updating status" });
+  }
+});
+
+router.put("/updating", async (req, res): Promise<void> => {
+  try {
+    const { isUpdating } = req.body;
+    if (typeof isUpdating !== "boolean") {
+      res.status(400).json({ error: "isUpdating must be a boolean" });
+      return;
+    }
+    await setIsUpdating(isUpdating);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("PUT /updating error:", err);
+    res.status(500).json({ error: "Failed to save updating status" });
   }
 });
 

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShieldCheck, LogOut, Plus, Trash2, Pencil, Save, RotateCcw,
-  ChevronDown, ChevronUp, X, Check, Lock, Eye, EyeOff, Clock
+  ChevronDown, ChevronUp, X, Check, Lock, Eye, EyeOff, Clock, Wrench
 } from "lucide-react";
 import {
   ADMIN_PASSWORD,
@@ -10,6 +10,8 @@ import {
   persistExecutorData,
   fetchLastChecked,
   persistLastChecked,
+  fetchIsUpdating,
+  persistIsUpdating,
   formatLastChecked,
   EXECUTOR_DATA,
   type ExecutorCategory,
@@ -426,14 +428,20 @@ function AdminPanel() {
   const [savedMeta, setSavedMeta] = useState(false);
   const [metaError, setMetaError] = useState<string | null>(null);
 
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [savingUpdating, setSavingUpdating] = useState(false);
+  const [savedUpdating, setSavedUpdating] = useState(false);
+  const [updatingError, setUpdatingError] = useState<string | null>(null);
+
   const [execModal, setExecModal] = useState<{ catIndex: number; execIndex: number | null } | null>(null);
   const [catModal, setCatModal] = useState<{ catIndex: number | null } | null>(null);
 
   useEffect(() => {
-    Promise.all([fetchExecutorData(), fetchLastChecked()]).then(([d, lc]) => {
+    Promise.all([fetchExecutorData(), fetchLastChecked(), fetchIsUpdating()]).then(([d, lc, upd]) => {
       setData(d);
       setLastChecked(lc);
       setLastCheckedInput(lc);
+      setIsUpdating(upd);
       setLoading(false);
     });
   }, []);
@@ -484,6 +492,21 @@ function AdminPanel() {
       setSavingMeta(false);
     }
   }, [lastCheckedInput]);
+
+  const toggleUpdating = useCallback(async (val: boolean) => {
+    setSavingUpdating(true);
+    setUpdatingError(null);
+    try {
+      await persistIsUpdating(val);
+      setIsUpdating(val);
+      setSavedUpdating(true);
+      setTimeout(() => setSavedUpdating(false), 2500);
+    } catch (err: unknown) {
+      setUpdatingError(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setSavingUpdating(false);
+    }
+  }, []);
 
   const updateData = (newData: ExecutorCategory[]) => setData(newData);
 
@@ -582,6 +605,55 @@ function AdminPanel() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8">
+
+        {/* Update Mode Toggle */}
+        <div className={cn(
+          "mb-6 border rounded-2xl p-5 transition-colors duration-300",
+          isUpdating
+            ? "bg-yellow-500/10 border-yellow-500/40"
+            : "bg-card/40 border-border/50"
+        )}>
+          <div className="flex items-center gap-2 mb-3">
+            <Wrench className={cn("w-4 h-4", isUpdating ? "text-yellow-400" : "text-muted-foreground")} />
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">Update Mode</h2>
+            {isUpdating && (
+              <span className="ml-auto text-xs bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider">
+                Active
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">
+            When enabled, the public site will display an "updating" message instead of the executor list. Visitors will be prompted to check back later or join the Discord.
+          </p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => toggleUpdating(!isUpdating)}
+              disabled={savingUpdating}
+              className={cn(
+                "relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 focus:outline-none",
+                isUpdating ? "bg-yellow-500" : "bg-muted/60 border border-border"
+              )}
+            >
+              <span className={cn(
+                "inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300",
+                isUpdating ? "translate-x-6" : "translate-x-1"
+              )} />
+            </button>
+            <span className={cn("text-sm font-semibold", isUpdating ? "text-yellow-400" : "text-muted-foreground")}>
+              {savingUpdating ? "Saving..." : isUpdating ? "Update Mode is ON — site is showing the updating message" : "Update Mode is OFF — site is showing normally"}
+            </span>
+            {savedUpdating && (
+              <span className="flex items-center gap-1 text-xs text-success ml-auto">
+                <Check className="w-3.5 h-3.5" /> Saved
+              </span>
+            )}
+          </div>
+          {updatingError && (
+            <p className="text-destructive text-xs mt-2 flex items-center gap-1">
+              <X className="w-3.5 h-3.5" /> {updatingError}
+            </p>
+          )}
+        </div>
 
         {/* Last Checked Editor */}
         <div className="mb-8 bg-card/40 border border-border/50 rounded-2xl p-5">
