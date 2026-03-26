@@ -259,7 +259,7 @@ export const persistIsUpdating = async (isUpdating: boolean): Promise<void> => {
   if (!res.ok) throw new Error(`Save failed: HTTP ${res.status}`);
 };
 
-export const DISCORD_URL = "https://discord.gg/your-discord";
+export const DISCORD_URL = "https://discord.gg/VvSK3zUHZP";
 
 export const getStats = (data: ExecutorCategory[]) => {
   let updated = 0;
